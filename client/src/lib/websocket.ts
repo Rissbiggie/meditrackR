@@ -72,19 +72,20 @@ class WebSocketService {
 
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
             // Implement exponential backoff for reconnection
-            let reconnectAttempts = this.reconnectAttempts;
-            const maxReconnectDelay = 30000; // Maximum delay of 30 seconds
+            let retryCount = this.reconnectAttempts;
+            const maxRetries = this.maxReconnectAttempts;
+            const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000); // Max 30 seconds
 
-            const reconnectDelay = Math.min(
-              1000 * Math.pow(2, reconnectAttempts),
-              maxReconnectDelay
-            );
-
-            console.log(`Attempting to reconnect in ${reconnectDelay/1000}s...`);
-            this.reconnectAttempts++;
-            this.reconnectTimeout = setTimeout(() => {
-              this.connect().catch(console.error);
-            }, reconnectDelay);
+            if (retryCount < maxRetries) {
+              console.log(`Attempting to reconnect in ${backoffTime/1000}s...`);
+              this.reconnectTimeout = setTimeout(() => {
+                this.connect().catch(console.error);
+              }, backoffTime);
+              this.reconnectAttempts++;
+            } else {
+              console.error('Max reconnection attempts reached');
+              reject(new Error("Maximum reconnection attempts reached"));
+            }
           } else {
             console.error("Maximum reconnection attempts reached");
             reject(new Error("Maximum reconnection attempts reached"));

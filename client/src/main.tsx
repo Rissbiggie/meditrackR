@@ -8,10 +8,10 @@ createRoot(document.getElementById("root")!).render(<App />);
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      const registration = await navigator.serviceWorker.register('/service-worker.js', { type: 'module' });
       console.log('SW registered:', registration);
     } catch (error) {
-      console.warn('SW registration skipped in development');
+      console.warn('SW registration failed:', error);
     }
   });
 }

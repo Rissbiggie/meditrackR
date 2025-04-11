@@ -25,7 +25,7 @@ app.use(apiLogger);
     // Don't halt the server, let it continue to start up even if database initialization fails
     // This way the user can still access the application interface to diagnose and fix issues
   }
-  
+
   // Register all application routes
   const server = await registerRoutes(app);
 
@@ -35,7 +35,7 @@ app.use(apiLogger);
   } else {
     serveStatic(app);
   }
-  
+
   // Error handling middleware - must be after routes and vite setup
   app.use(notFound);
   app.use(errorHandler);
