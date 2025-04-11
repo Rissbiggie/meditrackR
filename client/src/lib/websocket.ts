@@ -31,7 +31,7 @@ class WebSocketService {
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
   private connectionPromise: Promise<WebSocket> | null = null;
-  
+
   /**
    * Initialize WebSocket connection
    */
@@ -39,22 +39,22 @@ class WebSocketService {
     if (this.connectionPromise) {
       return this.connectionPromise;
     }
-    
+
     this.connectionPromise = new Promise((resolve, reject) => {
       try {
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${protocol}//${window.location.host}/ws`;
-        
+
         console.log(`Connecting to WebSocket at ${wsUrl}`);
         const socket = new WebSocket(wsUrl);
-        
+
         socket.onopen = () => {
           console.log("WebSocket connection established");
           this.socket = socket;
           this.reconnectAttempts = 0;
           resolve(socket);
         };
-        
+
         socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
@@ -64,18 +64,25 @@ class WebSocketService {
             console.error("Error parsing WebSocket message:", error);
           }
         };
-        
+
         socket.onclose = (event) => {
           console.log(`WebSocket connection closed: ${event.code} - ${event.reason}`);
           this.socket = null;
           this.connectionPromise = null;
-          
+
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            const reconnectDelay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
-            console.log(`Attempting to reconnect in ${reconnectDelay / 1000}s...`);
-            
+            // Implement exponential backoff for reconnection
+            let reconnectAttempts = this.reconnectAttempts;
+            const maxReconnectDelay = 30000; // Maximum delay of 30 seconds
+
+            const reconnectDelay = Math.min(
+              1000 * Math.pow(2, reconnectAttempts),
+              maxReconnectDelay
+            );
+
+            console.log(`Attempting to reconnect in ${reconnectDelay/1000}s...`);
+            this.reconnectAttempts++;
             this.reconnectTimeout = setTimeout(() => {
-              this.reconnectAttempts++;
               this.connect().catch(console.error);
             }, reconnectDelay);
           } else {
@@ -83,7 +90,7 @@ class WebSocketService {
             reject(new Error("Maximum reconnection attempts reached"));
           }
         };
-        
+
         socket.onerror = (error) => {
           console.error("WebSocket error:", error);
           if (!this.socket) {
@@ -95,10 +102,10 @@ class WebSocketService {
         reject(error);
       }
     });
-    
+
     return this.connectionPromise;
   }
-  
+
   /**
    * Disconnect WebSocket
    */
@@ -107,16 +114,16 @@ class WebSocketService {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
-    
+
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.close();
       this.socket = null;
     }
-    
+
     this.connectionPromise = null;
     this.listeners.clear();
   }
-  
+
   /**
    * Send emergency alert
    */
@@ -126,7 +133,7 @@ class WebSocketService {
       data: emergencyData
     });
   }
-  
+
   /**
    * Send location update
    */
@@ -136,14 +143,14 @@ class WebSocketService {
       data: locationData
     });
   }
-  
+
   /**
    * Send custom message
    */
   public async sendMessage(data: WebSocketData): Promise<void> {
     try {
       const socket = await this.connect();
-      
+
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify(data));
       } else {
@@ -154,7 +161,7 @@ class WebSocketService {
       throw error;
     }
   }
-  
+
   /**
    * Add event listener
    */
@@ -162,31 +169,31 @@ class WebSocketService {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
     }
-    
+
     this.listeners.get(type)?.add(callback);
   }
-  
+
   /**
    * Remove event listener
    */
   public removeEventListener(type: string, callback: (data: any) => void): void {
     const listeners = this.listeners.get(type);
-    
+
     if (listeners) {
       listeners.delete(callback);
-      
+
       if (listeners.size === 0) {
         this.listeners.delete(type);
       }
     }
   }
-  
+
   /**
    * Notify all listeners of an event
    */
   private notifyListeners(type: string, data: any): void {
     const listeners = this.listeners.get(type);
-    
+
     if (listeners) {
       listeners.forEach(callback => {
         try {

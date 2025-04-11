@@ -28,6 +28,17 @@ export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps)
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'distance' | 'name' | 'status'>('distance');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setIsLoading(true);
+      // Add a small delay to prevent rapid re-renders
+      setTimeout(() => setIsLoading(false), 300);
+    }, 200);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, selectedType, sortBy]);
 
   const filteredFacilities = facilities.filter(facility => {
     const matchesSearch = facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
