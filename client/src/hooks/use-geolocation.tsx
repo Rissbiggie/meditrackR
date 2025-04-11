@@ -167,18 +167,46 @@ function useGeolocationHook(options: GeolocationOptions = {}) {
         error: error.message,
       }));
       
-      if (error.code === 1) { // Permission denied
-        toast({
-          title: 'Location Permission Denied',
-          description: 'Please enable location services for this application to work properly.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Location Error',
-          description: `Failed to get your location: ${error.message}`,
-          variant: 'destructive',
-        });
+      switch (error.code) {
+        case 1: // Permission denied
+          toast({
+            title: 'Location Access Required',
+            description: 'Please allow location access in your browser settings and refresh the page.',
+            variant: 'destructive',
+          });
+          break;
+        case 2: // Position unavailable
+          toast({
+            title: 'Location Unavailable',
+            description: 'Unable to determine your location. Please check your GPS or internet connection.',
+            variant: 'destructive',
+          });
+          break;
+        case 3: // Timeout
+          toast({
+            title: 'Location Timeout',
+            description: 'Taking too long to get your location. Please try again.',
+            variant: 'destructive',
+          });
+          // Retry with less accuracy
+          navigator.geolocation.getCurrentPosition(
+            geoSuccess,
+            (retryError) => {
+              toast({
+                title: 'Location Error',
+                description: 'Still unable to get your location. Please check your settings.',
+                variant: 'destructive',
+              });
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+          );
+          break;
+        default:
+          toast({
+            title: 'Location Error',
+            description: `Failed to get your location: ${error.message}`,
+            variant: 'destructive',
+          });
       }
     };
 
