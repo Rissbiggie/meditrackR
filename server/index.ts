@@ -42,7 +42,7 @@ app.use(apiLogger);
 
   // Start server
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen(port, () => {
+  server.listen(port, '0.0.0.0', () => {
     log(`MediTrack API server running on port ${port}`);
   });
 })();
