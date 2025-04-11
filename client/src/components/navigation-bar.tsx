@@ -10,35 +10,35 @@ export function NavigationBar() {
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [open, setOpen] = useState(false);
-  
+
   const routes = [
     { path: '/', label: 'Home', icon: <Home className="h-5 w-5" /> },
     { path: '/dashboard', label: 'Dashboard', icon: <Stethoscope className="h-5 w-5" /> },
     { path: '/map', label: 'Find Services', icon: <Map className="h-5 w-5" /> },
     { path: '/settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
   ];
-  
+
   const handleNavigate = (path: string) => {
     window.location.href = path;
     setOpen(false);
   };
-  
+
   const handleLogout = () => {
     logoutMutation.mutate();
     setOpen(false);
   };
-  
+
   return (
     <>
-      {/* Mobile Nav */}
-      <div className="fixed bottom-0 left-0 right-0 border-t md:hidden z-50" style={{backgroundColor: '#50C878'}}>
-        <div className="flex justify-around items-center h-16">
+      {/* Mobile Nav - Improved Responsiveness */}
+      <div className="fixed bottom-0 left-0 right-0 border-t md:hidden z-50" style={{ backgroundColor: '#50C878' }}>
+        <div className="flex justify-around items-center h-12"> {/* Reduced height for better mobile fit */}
           {routes.map((route) => (
             <Button
               key={route.path}
               variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center px-2 py-3 h-full rounded-none ${
+              size="icon" {/* Smaller button size */}
+              className={`flex flex-col items-center px-2 py-1 h-full rounded-none ${
                 location === route.path
                   ? 'text-primary border-t-2 border-primary'
                   : 'text-muted-foreground'
@@ -51,15 +51,15 @@ export function NavigationBar() {
           ))}
         </div>
       </div>
-      
-      {/* Desktop Header */}
-      <header className="hidden md:flex justify-between items-center py-6 px-6 border-b" style={{backgroundColor: '#50C878', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'}}>
+
+      {/* Desktop Header - Remains largely unchanged */}
+      <header className="hidden md:flex justify-between items-center py-6 px-6 border-b" style={{ backgroundColor: '#50C878', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
         <div className="flex items-center space-x-8">
           <div className="flex items-center">
             <MediTrackLogo width={70} height={50} />
             <h1 className="text-2xl font-bold text-primary ml-2">MediTrack</h1>
           </div>
-          
+
           <nav className="flex gap-6">
             {routes.map((route) => (
               <Button
@@ -77,7 +77,7 @@ export function NavigationBar() {
             ))}
           </nav>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {user && (
             <>
@@ -87,23 +87,23 @@ export function NavigationBar() {
           )}
         </div>
       </header>
-      
-      {/* Mobile Header */}
-      <header className="md:hidden flex justify-between items-center py-4 px-4 border-b fixed top-0 left-0 right-0 z-50" style={{backgroundColor: '#50C878', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'}}>
+
+      {/* Mobile Header - Improved layout and responsiveness */}
+      <header className="md:hidden flex justify-between items-center py-2 px-4 border-b fixed top-0 left-0 right-0 z-50" style={{ backgroundColor: '#50C878', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
         <div className="flex items-center">
           <MediTrackLogo width={50} height={35} />
           <h1 className="text-xl font-bold text-primary ml-1">MediTrack</h1>
         </div>
-        
+
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent>
+          <SheetContent className="p-4"> {/* Added padding for better spacing */}
             <div className="flex flex-col h-full">
-              <div className="flex justify-between items-center py-4">
+              <div className="flex justify-between items-center py-2"> {/* Reduced padding */}
                 <div className="flex flex-col items-center">
                   <div className="flex items-center">
                     <MediTrackLogo width={60} height={40} />
@@ -115,14 +115,14 @@ export function NavigationBar() {
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              
+
               {user && (
-                <div className="py-4 border-b">
+                <div className="py-2 border-b"> {/* Reduced padding */}
                   <div className="font-medium">Hello, {user.name}</div>
                 </div>
               )}
-              
-              <div className="flex-1 py-4">
+
+              <div className="flex-1 py-2"> {/* Reduced padding */}
                 {routes.map((route) => (
                   <Button
                     key={route.path}
@@ -137,11 +137,11 @@ export function NavigationBar() {
                   </Button>
                 ))}
               </div>
-              
-              <div className="py-4 border-t">
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
+
+              <div className="py-2 border-t"> {/* Reduced padding */}
+                <Button
+                  variant="outline"
+                  className="w-full"
                   onClick={handleLogout}
                   disabled={logoutMutation.isPending}
                 >
@@ -152,12 +152,12 @@ export function NavigationBar() {
           </SheetContent>
         </Sheet>
       </header>
-      
-      {/* Spacer for mobile */}
-      <div className="h-14 md:hidden"></div>
-      
-      {/* Bottom spacer for mobile */}
-      <div className="h-16 md:hidden"></div>
+
+      {/* Spacer for mobile - Reduced height */}
+      <div className="h-8 md:hidden"></div>
+
+      {/* Bottom spacer for mobile - Reduced height */}
+      <div className="h-8 md:hidden"></div>
     </>
   );
 }

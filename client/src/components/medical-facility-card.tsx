@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -41,7 +40,7 @@ export function MedicalFacilityCard({ facility, userLocation }: MedicalFacilityC
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="bg-primary/5 pb-4">
         <div className="flex justify-between items-start">
           <div>
@@ -62,7 +61,7 @@ export function MedicalFacilityCard({ facility, userLocation }: MedicalFacilityC
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="flex-1 p-4 space-y-3">
         <div className="space-y-4">
           <div className="flex items-start gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground mt-1" />

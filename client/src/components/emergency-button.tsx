@@ -220,7 +220,7 @@ export function EmergencyButton({ className }: EmergencyButtonProps) {
       <Button 
         variant="destructive" 
         size="lg" 
-        className={`font-bold flex items-center gap-2 shadow-md ${className}`}
+        className={`font-bold flex items-center gap-2 shadow-md w-full md:w-auto fixed bottom-4 left-4 right-4 md:static z-50 ${className}`}
         onClick={handleEmergencyClick}
       >
         <AlertTriangle className="h-5 w-5" />
