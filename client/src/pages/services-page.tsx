@@ -6,14 +6,16 @@ import { useGeolocation } from '@/hooks/use-geolocation';
 import { Loader2 } from 'lucide-react';
 
 export default function ServicesPage() {
-  const { location } = useGeolocation();
-  const { data: facilities, isLoading } = useQuery({
+  const { latitude, longitude, isLoading: locationLoading } = useGeolocation();
+  const { data: facilities, isLoading: facilitiesLoading } = useQuery({
     queryKey: ['facilities'],
     queryFn: async () => {
       const response = await fetch('/api/facilities');
       return response.json();
     },
   });
+
+  const isLoading = locationLoading || facilitiesLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,7 +34,7 @@ export default function ServicesPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <ServicesFinder facilities={facilities || []} userLocation={location} />
+          <ServicesFinder facilities={facilities || []} />
         )}
       </main>
     </div>
