@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Loader2 } from 'lucide-react';
+import { Button } from "./button"; // Added import for Button component
 
 // Define type for map position
 interface MapPosition {
@@ -35,19 +36,19 @@ export function Map({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Create map when component mounts
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
-    
+
     // Create map
     mapRef.current = L.map(mapContainerRef.current).setView([0, 0], 13);
-    
+
     // Add tile layer (map style)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mapRef.current);
-    
+
     // Cleanup function
     return () => {
       if (mapRef.current) {
@@ -56,21 +57,21 @@ export function Map({
       }
     };
   }, []);
-  
+
   // Update map when user position changes
   useEffect(() => {
     if (!mapRef.current || !userPosition.latitude || !userPosition.longitude) return;
-    
+
     const map = mapRef.current;
     const { latitude, longitude } = userPosition;
-    
+
     // Clear existing markers
     map.eachLayer((layer) => {
       if (layer instanceof L.Marker) {
         map.removeLayer(layer);
       }
     });
-    
+
     // Create user marker with prominent styling
     const userIcon = L.divIcon({
       html: `<div class="w-8 h-8 rounded-full bg-blue-500 border-4 border-white flex items-center justify-center shadow-lg animate-pulse">
@@ -83,11 +84,11 @@ export function Map({
       iconSize: [24, 24],
       iconAnchor: [12, 12]
     });
-    
+
     const userMarker = L.marker([latitude, longitude], { icon: userIcon })
       .addTo(map)
       .bindPopup('Your Location');
-    
+
     // Create circle showing accuracy
     if (userPosition.accuracy) {
       L.circle([latitude, longitude], {
@@ -97,18 +98,18 @@ export function Map({
         fillOpacity: 0.2
       }).addTo(map);
     }
-    
+
     // Add facility markers
     facilities.forEach(facility => {
       const lat = parseFloat(facility.latitude);
       const lng = parseFloat(facility.longitude);
-      
+
       if (isNaN(lat) || isNaN(lng)) return;
-      
+
       // Different icons based on facility type
       let iconHtml = '';
       let iconColor = '';
-      
+
       switch (facility.type.toLowerCase()) {
         case 'hospital':
           iconHtml = '<div class="text-white text-xs">H</div>';
@@ -126,7 +127,7 @@ export function Map({
           iconHtml = '<div class="text-white text-xs">M</div>';
           iconColor = 'bg-purple-500';
       }
-      
+
       const facilityIcon = L.divIcon({
         html: `<div class="w-6 h-6 rounded-full ${iconColor} border-2 border-white flex items-center justify-center">
                  ${iconHtml}
@@ -135,30 +136,30 @@ export function Map({
         iconSize: [24, 24],
         iconAnchor: [12, 12]
       });
-      
+
       const marker = L.marker([lat, lng], { icon: facilityIcon })
         .addTo(map)
         .bindPopup(`<b>${facility.name}</b><br>${facility.type}`);
-      
+
       if (onFacilityClick) {
         marker.on('click', () => {
           onFacilityClick(facility);
         });
       }
     });
-    
+
     // Center the map view to include user and nearby facilities
     if (facilities.length > 0) {
       const points = [
         [latitude, longitude],
         ...facilities.map(f => [parseFloat(f.latitude), parseFloat(f.longitude)] as [number, number])
       ];
-      
+
       // Filter out any invalid points (with NaN values)
       const validPoints = points.filter(
         p => !isNaN(p[0]) && !isNaN(p[1])
       ) as [number, number][];
-      
+
       if (validPoints.length > 1) {
         map.fitBounds(L.latLngBounds(validPoints));
       } else {
@@ -168,7 +169,7 @@ export function Map({
       map.setView([latitude, longitude], 13);
     }
   }, [userPosition, facilities, onFacilityClick]);
-  
+
   if (isLoading || !userPosition.latitude || !userPosition.longitude) {
     return (
       <div 
@@ -190,7 +191,7 @@ export function Map({
       </div>
     );
   }
-  
+
   return (
     <div 
       ref={mapContainerRef} 
