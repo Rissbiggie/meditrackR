@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -13,6 +14,7 @@ type Facility = {
   longitude: number;
   phone: string;
   services: string[];
+  is_24_hours: boolean;
 };
 
 type MedicalFacilityCardProps = {
@@ -44,9 +46,14 @@ export function MedicalFacilityCard({ facility, userLocation }: MedicalFacilityC
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-semibold text-lg">{facility.name}</h3>
-            <Badge variant="secondary" className={getTypeColor(facility.type)}>
-              {facility.type}
-            </Badge>
+            <div className="flex gap-2 mt-1">
+              <Badge variant="secondary" className={getTypeColor(facility.type)}>
+                {facility.type}
+              </Badge>
+              <Badge variant="outline" className={facility.is_24_hours ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                {facility.is_24_hours ? '24/7 Open' : 'Limited Hours'}
+              </Badge>
+            </div>
           </div>
           {distance && (
             <Badge variant="outline" className="ml-2">

@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { MedicalFacilityCard } from './medical-facility-card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Hospital, Pill, FirstAid, Search } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Hospital, Pill, FirstAid, Search, SortAsc } from 'lucide-react';
 import { calculateDistance } from '@/lib/utils';
 
 type Facility = {
@@ -15,6 +16,7 @@ type Facility = {
   longitude: number;
   phone: string;
   services: string[];
+  is_24_hours: boolean;
 };
 
 type ServiceFinderProps = {
@@ -25,6 +27,7 @@ type ServiceFinderProps = {
 export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'distance' | 'name' | 'status'>('distance');
 
   const filteredFacilities = facilities.filter(facility => {
     const matchesSearch = facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -36,13 +39,21 @@ export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps)
     return matchesSearch && matchesType;
   });
 
-  const sortedFacilities = userLocation
-    ? filteredFacilities.sort((a, b) => {
+  const sortedFacilities = [...filteredFacilities].sort((a, b) => {
+    switch (sortBy) {
+      case 'distance':
+        if (!userLocation) return 0;
         const distanceA = calculateDistance(userLocation, { latitude: a.latitude, longitude: a.longitude });
         const distanceB = calculateDistance(userLocation, { latitude: b.latitude, longitude: b.longitude });
         return distanceA - distanceB;
-      })
-    : filteredFacilities;
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'status':
+        return (b.is_24_hours ? 1 : 0) - (a.is_24_hours ? 1 : 0);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -56,32 +67,44 @@ export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps)
             className="pl-9"
           />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={selectedType === 'Hospital' ? 'default' : 'outline'}
-            onClick={() => setSelectedType(selectedType === 'Hospital' ? null : 'Hospital')}
-            className="flex-1 md:flex-none"
-          >
-            <Hospital className="mr-2 h-4 w-4" />
-            Hospitals
-          </Button>
-          <Button
-            variant={selectedType === 'Clinic' ? 'default' : 'outline'}
-            onClick={() => setSelectedType(selectedType === 'Clinic' ? null : 'Clinic')}
-            className="flex-1 md:flex-none"
-          >
-            <FirstAid className="mr-2 h-4 w-4" />
-            Clinics
-          </Button>
-          <Button
-            variant={selectedType === 'Pharmacy' ? 'default' : 'outline'}
-            onClick={() => setSelectedType(selectedType === 'Pharmacy' ? null : 'Pharmacy')}
-            className="flex-1 md:flex-none"
-          >
-            <Pill className="mr-2 h-4 w-4" />
-            Pharmacies
-          </Button>
-        </div>
+        <Select value={sortBy} onValueChange={(value: 'distance' | 'name' | 'status') => setSortBy(value)}>
+          <SelectTrigger className="w-[140px]">
+            <SortAsc className="mr-2 h-4 w-4" />
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="distance">Distance</SelectItem>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="status">Open/Closed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          variant={selectedType === 'Hospital' ? 'default' : 'outline'}
+          onClick={() => setSelectedType(selectedType === 'Hospital' ? null : 'Hospital')}
+          className="flex-1 md:flex-none"
+        >
+          <Hospital className="mr-2 h-4 w-4" />
+          Hospitals
+        </Button>
+        <Button
+          variant={selectedType === 'Clinic' ? 'default' : 'outline'}
+          onClick={() => setSelectedType(selectedType === 'Clinic' ? null : 'Clinic')}
+          className="flex-1 md:flex-none"
+        >
+          <FirstAid className="mr-2 h-4 w-4" />
+          Clinics
+        </Button>
+        <Button
+          variant={selectedType === 'Pharmacy' ? 'default' : 'outline'}
+          onClick={() => setSelectedType(selectedType === 'Pharmacy' ? null : 'Pharmacy')}
+          className="flex-1 md:flex-none"
+        >
+          <Pill className="mr-2 h-4 w-4" />
+          Pharmacies
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
