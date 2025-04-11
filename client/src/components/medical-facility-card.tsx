@@ -56,10 +56,22 @@ export function MedicalFacilityCard({
     <Card className="w-full mb-4">
       <CardContent className="p-4">
         <div className="flex flex-col">
-          <div className="flex items-center mb-2">
-            {getFacilityTypeIcon()}
-            <h3 className="font-semibold text-lg">{facility.name}</h3>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              {getFacilityTypeIcon()}
+              <h3 className="font-semibold text-lg">{facility.name}</h3>
+            </div>
+            {facility.isOpen && (
+              <span className="px-2 py-1 text-xs bg-green-500/10 text-green-500 rounded-full">
+                Open Now
+              </span>
+            )}
           </div>
+          {distance !== undefined && (
+            <div className="text-sm text-muted-foreground mb-2">
+              {distance < 1 ? `${(distance * 1000).toFixed(0)}m away` : `${distance.toFixed(1)}km away`}
+            </div>
+          )}
           
           <div className="mb-2 text-sm text-gray-500 flex items-center">
             <span className="capitalize">{facility.type}</span>

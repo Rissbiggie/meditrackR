@@ -61,10 +61,10 @@ export default function HomePage() {
             <Button 
               variant="outline" 
               className="h-auto py-4 flex flex-col items-center justify-center"
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/services')}
             >
               <MapPin className="h-6 w-6 mb-2" />
-              <span>Find Nearby Facilities</span>
+              <span>Find Medical Services</span>
             </Button>
             <Button 
               variant="outline" 
