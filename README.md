@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # MediTrack: Medical Emergency Geo Tracker
 
 ![MediTrack Logo](./generated-icon.png)
@@ -61,6 +62,9 @@ desc
 =======
 # meditrack
 >>>>>>> bf9c876471e9ac8f7e403096eabd7e57167df6d8
+=======
+# meditrack
+>>>>>>> 9261dd8d9cd0693d963aa19ea0c534ede22f2c40
 =======
 # meditrack
 >>>>>>> 9261dd8d9cd0693d963aa19ea0c534ede22f2c40
