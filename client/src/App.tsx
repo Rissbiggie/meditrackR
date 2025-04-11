@@ -11,6 +11,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
 import { AuthProvider } from "@/hooks/use-auth";
+import ServicesPage from "@/pages/services-page"; // Added import for ServicesPage
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <ProtectedRoute path="/map" component={DashboardPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/admin" component={AdminDashboard} />
+      <ProtectedRoute path="/services" component={ServicesPage} /> {/* Added services route */}
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
