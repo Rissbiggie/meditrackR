@@ -1,104 +1,103 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { MedicalFacilityCard } from '@/components/medical-facility-card';
-import { Search, Filter, MapPin } from 'lucide-react';
+import { MedicalFacilityCard } from './medical-facility-card';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Hospital, Pill, FirstAid, Search } from 'lucide-react';
+import { calculateDistance } from '@/lib/utils';
 
-interface ServiceFinderProps {
-  facilities: any[];
-  userLocation: { lat: number; lng: number } | null;
-}
+type Facility = {
+  id: number;
+  name: string;
+  type: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  services: string[];
+};
+
+type ServiceFinderProps = {
+  facilities: Facility[];
+  userLocation: { latitude: number; longitude: number } | null;
+};
 
 export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('distance');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const calculateDistance = (facilityLat: number, facilityLng: number) => {
-    if (!userLocation) return Infinity;
-    // Basic distance calculation using Haversine formula
-    const R = 6371; // Earth's radius in km
-    const dLat = (facilityLat - userLocation.lat) * Math.PI / 180;
-    const dLon = (facilityLng - userLocation.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(facilityLat * Math.PI / 180) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+  const filteredFacilities = facilities.filter(facility => {
+    const matchesSearch = facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesType = !selectedType || facility.type === selectedType;
+    
+    return matchesSearch && matchesType;
+  });
 
-  const filteredFacilities = facilities
-    .filter(facility => {
-      const matchesSearch = facility.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'all' || facility.type === filterType;
-      return matchesSearch && matchesType;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'distance') {
-        return calculateDistance(a.lat, a.lng) - calculateDistance(b.lat, b.lng);
-      }
-      return a.name.localeCompare(b.name);
-    });
+  const sortedFacilities = userLocation
+    ? filteredFacilities.sort((a, b) => {
+        const distanceA = calculateDistance(userLocation, { latitude: a.latitude, longitude: a.longitude });
+        const distanceB = calculateDistance(userLocation, { latitude: b.latitude, longitude: b.longitude });
+        return distanceA - distanceB;
+      })
+    : filteredFacilities;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search medical facilities..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, address, or services..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-[180px]">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="hospital">Hospitals</SelectItem>
-            <SelectItem value="clinic">Clinics</SelectItem>
-            <SelectItem value="pharmacy">Pharmacies</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
-            <MapPin className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="distance">Distance</SelectItem>
-            <SelectItem value="name">Name</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedType === 'Hospital' ? 'default' : 'outline'}
+            onClick={() => setSelectedType(selectedType === 'Hospital' ? null : 'Hospital')}
+            className="flex-1 md:flex-none"
+          >
+            <Hospital className="mr-2 h-4 w-4" />
+            Hospitals
+          </Button>
+          <Button
+            variant={selectedType === 'Clinic' ? 'default' : 'outline'}
+            onClick={() => setSelectedType(selectedType === 'Clinic' ? null : 'Clinic')}
+            className="flex-1 md:flex-none"
+          >
+            <FirstAid className="mr-2 h-4 w-4" />
+            Clinics
+          </Button>
+          <Button
+            variant={selectedType === 'Pharmacy' ? 'default' : 'outline'}
+            onClick={() => setSelectedType(selectedType === 'Pharmacy' ? null : 'Pharmacy')}
+            className="flex-1 md:flex-none"
+          >
+            <Pill className="mr-2 h-4 w-4" />
+            Pharmacies
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredFacilities.map((facility) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sortedFacilities.map((facility) => (
           <MedicalFacilityCard
             key={facility.id}
             facility={facility}
-            distance={calculateDistance(facility.lat, facility.lng)}
+            userLocation={userLocation}
           />
         ))}
       </div>
 
-      {filteredFacilities.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            No facilities found matching your criteria
-          </CardContent>
-        </Card>
+      {sortedFacilities.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          No medical facilities found matching your criteria
+        </div>
       )}
     </div>
   );

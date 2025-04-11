@@ -1,117 +1,90 @@
+import { Card, CardContent, CardHeader } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { Phone, Navigation, Clock, MapPin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { MedicalFacility } from '@shared/schema';
+import { calculateDistance } from '@/lib/utils';
 
-interface MedicalFacilityCardProps {
-  facility: MedicalFacility;
-  userLocation?: { latitude: number | null; longitude: number | null };
-  onNavigateClick?: (facility: MedicalFacility) => void;
-}
+type Facility = {
+  id: number;
+  name: string;
+  type: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  services: string[];
+};
 
-export function MedicalFacilityCard({ 
-  facility, 
-  userLocation,
-  onNavigateClick
-}: MedicalFacilityCardProps) {
-  
-  const handleCall = () => {
-    if (facility.phone) {
-      window.location.href = `tel:${facility.phone}`;
-    }
-  };
-  
-  const handleNavigate = () => {
-    if (onNavigateClick) {
-      onNavigateClick(facility);
-      return;
-    }
-    
-    if (userLocation?.latitude && userLocation?.longitude) {
-      // Open in Google Maps
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${facility.latitude},${facility.longitude}&travelmode=driving`;
-      window.open(url, '_blank');
-    } else {
-      // Just navigate to the location without directions
-      const url = `https://www.google.com/maps/search/?api=1&query=${facility.latitude},${facility.longitude}`;
-      window.open(url, '_blank');
-    }
-  };
-  
-  // Get facility type icon
-  const getFacilityTypeIcon = () => {
-    switch (facility.type.toLowerCase()) {
-      case 'hospital':
-        return <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>;
-      case 'clinic':
-        return <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>;
-      case 'pharmacy':
-        return <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>;
+type MedicalFacilityCardProps = {
+  facility: Facility;
+  userLocation: { latitude: number; longitude: number } | null;
+};
+
+export function MedicalFacilityCard({ facility, userLocation }: MedicalFacilityCardProps) {
+  const distance = userLocation
+    ? calculateDistance(userLocation, { latitude: facility.latitude, longitude: facility.longitude })
+    : null;
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Hospital':
+        return 'bg-red-100 text-red-800';
+      case 'Clinic':
+        return 'bg-blue-100 text-blue-800';
+      case 'Pharmacy':
+        return 'bg-green-100 text-green-800';
       default:
-        return <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>;
+        return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
   return (
-    <Card className="w-full mb-4">
-      <CardContent className="p-4">
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              {getFacilityTypeIcon()}
-              <h3 className="font-semibold text-lg">{facility.name}</h3>
-            </div>
-            {facility.isOpen && (
-              <span className="px-2 py-1 text-xs bg-green-500/10 text-green-500 rounded-full">
-                Open Now
-              </span>
-            )}
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <CardHeader className="bg-primary/5 pb-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-semibold text-lg">{facility.name}</h3>
+            <Badge variant="secondary" className={getTypeColor(facility.type)}>
+              {facility.type}
+            </Badge>
           </div>
-          {distance !== undefined && (
-            <div className="text-sm text-muted-foreground mb-2">
-              {distance < 1 ? `${(distance * 1000).toFixed(0)}m away` : `${distance.toFixed(1)}km away`}
-            </div>
+          {distance && (
+            <Badge variant="outline" className="ml-2">
+              {distance.toFixed(1)} km away
+            </Badge>
           )}
-          
-          <div className="mb-2 text-sm text-gray-500 flex items-center">
-            <span className="capitalize">{facility.type}</span>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="space-y-4">
+          <div className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+            <span className="text-sm">{facility.address}</span>
           </div>
-          
-          {facility.address && (
-            <div className="flex items-start mb-2 text-sm">
-              <MapPin className="h-4 w-4 mr-2 mt-0.5 text-gray-400" />
-              <span>{facility.address}</span>
-            </div>
-          )}
-          
-          {facility.openingHours && (
-            <div className="flex items-start mb-2 text-sm">
-              <Clock className="h-4 w-4 mr-2 mt-0.5 text-gray-400" />
-              <span>{facility.openingHours}</span>
-            </div>
-          )}
-          
-          <div className="flex justify-between mt-3">
-            {facility.phone && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center gap-1"
-                onClick={handleCall}
-              >
-                <Phone className="h-4 w-4" />
-                <span>Call</span>
-              </Button>
-            )}
-            
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="flex items-center gap-1 ml-auto"
-              onClick={handleNavigate}
-            >
-              <Navigation className="h-4 w-4" />
-              <span>Directions</span>
+
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            <a href={`tel:${facility.phone}`} className="text-sm text-primary hover:underline">
+              {facility.phone}
+            </a>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {facility.services.map((service, index) => (
+              <Badge key={index} variant="secondary" className="text-xs">
+                {service}
+              </Badge>
+            ))}
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button className="flex-1" variant="default">
+              <Phone className="mr-2 h-4 w-4" />
+              Call Now
+            </Button>
+            <Button className="flex-1" variant="outline">
+              <Navigation className="mr-2 h-4 w-4" />
+              Directions
             </Button>
           </div>
         </div>
