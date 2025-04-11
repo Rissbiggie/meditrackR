@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   allergies: text("allergies"),
   medicalConditions: text("medical_conditions"),
   weight: text("weight"),
+  bloodPressure: text("blood_pressure"),
   isAdmin: boolean("is_admin").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

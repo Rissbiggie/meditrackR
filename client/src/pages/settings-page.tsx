@@ -177,6 +177,17 @@ export default function SettingsPage() {
                       placeholder="Enter your weight in pounds"
                     />
                   </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="bloodPressure">Blood Pressure</Label>
+                    <Input
+                      id="bloodPressure"
+                      name="bloodPressure"
+                      value={formState.bloodPressure}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 120/80 mmHg"
+                    />
+                  </div>
                 </div>
                 
                 <Button 
