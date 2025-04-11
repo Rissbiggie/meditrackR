@@ -44,5 +44,6 @@ app.use(apiLogger);
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen(port, '0.0.0.0', () => {
     log(`MediTrack API server running on port ${port}`);
+    log(`Mode: ${process.env.NODE_ENV}`);
   });
 })();
