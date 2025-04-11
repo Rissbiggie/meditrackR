@@ -165,6 +165,18 @@ export default function SettingsPage() {
                       rows={3}
                     />
                   </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="weight">Weight (lbs)</Label>
+                    <Input
+                      id="weight"
+                      name="weight"
+                      type="number"
+                      value={formState.weight}
+                      onChange={handleInputChange}
+                      placeholder="Enter your weight in pounds"
+                    />
+                  </div>
                 </div>
                 
                 <Button 

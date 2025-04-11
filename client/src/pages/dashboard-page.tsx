@@ -49,9 +49,13 @@ export default function DashboardPage() {
                   <div className="font-medium w-24">Allergies:</div>
                   <div>{user.allergies || 'None reported'}</div>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 pb-3 border-b">
                   <div className="font-medium w-24">Conditions:</div>
                   <div>{user.medicalConditions || 'None reported'}</div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="font-medium w-24">Weight:</div>
+                  <div>{user.weight ? `${user.weight} lbs` : 'Not specified'}</div>
                 </div>
               </div>
             </CardContent>
