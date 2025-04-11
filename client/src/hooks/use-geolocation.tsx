@@ -8,6 +8,7 @@ interface GeolocationState {
   isLoading: boolean;
   error: string | null;
   permissionState: PermissionState | null;
+  hasTriedPermission: boolean;
 }
 
 interface GeolocationOptions {
@@ -27,6 +28,7 @@ function useGeolocationHook(options: GeolocationOptions = {}) {
     isLoading: true,
     error: null,
     permissionState: null,
+    hasTriedPermission: false,
   });
   
   const { toast } = useToast();

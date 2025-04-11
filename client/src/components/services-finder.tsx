@@ -1,11 +1,12 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MedicalFacilityCard } from './medical-facility-card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Hospital, Pill, FirstAid, Search, SortAsc } from 'lucide-react';
+import { Hospital, Pill, FirstAid, Search, SortAsc, MapPin } from 'lucide-react';
 import { calculateDistance } from '@/lib/utils';
+import { useGeolocation } from '@/hooks/use-geolocation';
+import { toast } from './ui/use-toast';
 
 type Facility = {
   id: number;
@@ -21,41 +22,81 @@ type Facility = {
 
 type ServiceFinderProps = {
   facilities: Facility[];
-  userLocation: { latitude: number; longitude: number } | null;
 };
 
-export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps) {
+export function ServicesFinder({ facilities }: ServiceFinderProps) {
+  const { 
+    latitude, 
+    longitude, 
+    error, 
+    isLoading, 
+    permissionState,
+    requestPermission 
+  } = useGeolocation();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'distance' | 'name' | 'status'>('distance');
-  const [isLoading, setIsLoading] = useState(false);
+
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Location Error",
+        description: "Please enable location access to find nearby services",
+        variant: "destructive",
+      });
+    }
+  }, [error]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      setIsLoading(true);
       // Add a small delay to prevent rapid re-renders
-      setTimeout(() => setIsLoading(false), 300);
+      
     }, 200);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, selectedType, sortBy]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin">
+          <MapPin className="h-8 w-8 text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!latitude || !longitude) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+        <p className="text-center text-muted-foreground">
+          Location access is required to find nearby medical services
+        </p>
+        <Button onClick={requestPermission}>
+          <MapPin className="mr-2 h-4 w-4" />
+          Enable Location Access
+        </Button>
+      </div>
+    );
+  }
+
   const filteredFacilities = facilities.filter(facility => {
     const matchesSearch = facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       facility.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
       facility.services.some(service => service.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesType = !selectedType || facility.type === selectedType;
-    
+
     return matchesSearch && matchesType;
   });
 
   const sortedFacilities = [...filteredFacilities].sort((a, b) => {
     switch (sortBy) {
       case 'distance':
-        if (!userLocation) return 0;
-        const distanceA = calculateDistance(userLocation, { latitude: a.latitude, longitude: a.longitude });
-        const distanceB = calculateDistance(userLocation, { latitude: b.latitude, longitude: b.longitude });
+        const distanceA = calculateDistance({latitude, longitude}, { latitude: a.latitude, longitude: a.longitude });
+        const distanceB = calculateDistance({latitude, longitude}, { latitude: b.latitude, longitude: b.longitude });
         return distanceA - distanceB;
       case 'name':
         return a.name.localeCompare(b.name);
@@ -123,7 +164,7 @@ export function ServicesFinder({ facilities, userLocation }: ServiceFinderProps)
           <MedicalFacilityCard
             key={facility.id}
             facility={facility}
-            userLocation={userLocation}
+            userLocation={{latitude, longitude}}
           />
         ))}
       </div>
