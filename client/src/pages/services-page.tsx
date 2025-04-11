@@ -1,12 +1,14 @@
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NavigationBar } from '@/components/navigation-bar';
+import { Input } from '@/components/ui/input';
 import { ServicesFinder } from '@/components/services-finder';
-import { useGeolocation } from '@/hooks/use-geolocation';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 
 export default function ServicesPage() {
-  const { location } = useGeolocation();
+  const [searchTerm, setSearchTerm] = useState('');
   const { data: facilities, isLoading } = useQuery({
     queryKey: ['facilities'],
     queryFn: async () => {
@@ -15,24 +17,51 @@ export default function ServicesPage() {
     },
   });
 
+  const categories = [
+    { id: 'primary', name: 'Primary Care' },
+    { id: 'cardio', name: 'Cardiology' },
+    { id: 'derm', name: 'Dermatology' },
+    { id: 'lab', name: 'Laboratory' },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <NavigationBar />
       
-      <main className="container max-w-6xl mx-auto p-4">
+      <main className="container max-w-md mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">Find Services</h1>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            className="pl-10"
+            placeholder="Search services"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Find Medical Services</h1>
-          <p className="text-muted-foreground">
-            Locate nearby hospitals, clinics, and pharmacies
-          </p>
+          <h2 className="text-lg font-semibold mb-3">Categories</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant="outline"
+                className="justify-start h-auto py-3"
+              >
+                {category.name}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {isLoading ? (
           <div className="flex justify-center p-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         ) : (
-          <ServicesFinder facilities={facilities || []} userLocation={location} />
+          <ServicesFinder facilities={facilities || []} />
         )}
       </main>
     </div>
