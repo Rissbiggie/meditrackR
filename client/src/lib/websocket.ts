@@ -27,8 +27,10 @@ export type EmergencyData = {
 class WebSocketService {
   private socket: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 10;
   private reconnectTimeout: NodeJS.Timeout | null = null;
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private readonly HEARTBEAT_INTERVAL = 30000; // 30 seconds
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
   private connectionPromise: Promise<WebSocket> | null = null;
 

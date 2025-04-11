@@ -19,7 +19,7 @@ localPort = 5000
 externalPort = 80
 
 [workflows]
-runButton = "Start MediTrack"
+runButton = "Dev Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -65,7 +65,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm install --no-audit --prefer-offline"
+args = "NODE_ENV=development npm install --no-audit --prefer-offline"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

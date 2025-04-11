@@ -42,8 +42,23 @@ app.use(apiLogger);
 
   // Start server
   const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // Graceful shutdown handler
+  const gracefulShutdown = () => {
+    server.close(() => {
+      log('Server shutting down gracefully');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
+
   server.listen(port, '0.0.0.0', () => {
     log(`MediTrack API server running on port ${port}`);
     log(`Mode: ${process.env.NODE_ENV}`);
   });
-})();
+})().catch(error => {
+  log(`Fatal error during startup: ${error}`);
+  process.exit(1);
+});
