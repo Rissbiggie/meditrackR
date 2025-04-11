@@ -1,14 +1,54 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { NavigationBar } from '@/components/navigation-bar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmergencyContacts } from '@/components/emergency-contacts';
 import { EmergencyButton } from '@/components/emergency-button';
 import { useAuth } from '@/hooks/use-auth';
 import { Heart, Activity, AlertCircle, User, Pill, Clock, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    bloodType: user?.bloodType || '',
+    allergies: user?.allergies || '',
+    medicalConditions: user?.medicalConditions || '',
+    weight: user?.weight || '',
+    bloodPressure: user?.bloodPressure || '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (userData: typeof formData) => {
+      const res = await apiRequest('PATCH', '/api/user/profile', userData);
+      return res.json();
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(['/api/user'], updatedUser);
+      toast({
+        title: 'Profile updated',
+        description: 'Your medical profile has been updated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Update failed',
+        description: error.message || 'Failed to update profile',
+        variant: 'destructive',
+      });
+    },
+  });
 
   if (!user) {
     return (
@@ -40,28 +80,67 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 pb-3 border-b">
-                  <div className="font-medium w-24">Blood Type:</div>
-                  <div>{user.bloodType || 'Not specified'}</div>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                updateProfileMutation.mutate(formData);
+              }}>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="font-medium w-24">Blood Type:</div>
+                    <Input
+                      name="bloodType"
+                      value={formData.bloodType || ''}
+                      onChange={handleInputChange}
+                      placeholder="Enter blood type"
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="font-medium w-24">Allergies:</div>
+                    <Textarea
+                      name="allergies"
+                      value={formData.allergies || ''}
+                      onChange={handleInputChange}
+                      placeholder="List any allergies"
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="font-medium w-24">Conditions:</div>
+                    <Textarea
+                      name="medicalConditions"
+                      value={formData.medicalConditions || ''}
+                      onChange={handleInputChange}
+                      placeholder="List any medical conditions"
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="font-medium w-24">Weight:</div>
+                    <Input
+                      name="weight"
+                      type="number"
+                      value={formData.weight || ''}
+                      onChange={handleInputChange}
+                      placeholder="Weight in lbs"
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="font-medium w-24">Blood Pressure:</div>
+                    <Input
+                      name="bloodPressure"
+                      value={formData.bloodPressure || ''}
+                      onChange={handleInputChange}
+                      placeholder="e.g. 120/80"
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending}>
+                    {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
                 </div>
-                <div className="flex items-start gap-3 pb-3 border-b">
-                  <div className="font-medium w-24">Allergies:</div>
-                  <div>{user.allergies || 'None reported'}</div>
-                </div>
-                <div className="flex items-start gap-3 pb-3 border-b">
-                  <div className="font-medium w-24">Conditions:</div>
-                  <div>{user.medicalConditions || 'None reported'}</div>
-                </div>
-                <div className="flex items-start gap-3 pb-3 border-b">
-                  <div className="font-medium w-24">Weight:</div>
-                  <div>{user.weight ? `${user.weight} lbs` : 'Not specified'}</div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="font-medium w-24">Blood Pressure:</div>
-                  <div>{user.bloodPressure || 'Not specified'}</div>
-                </div>
-              </div>
+              </form>
             </CardContent>
           </Card>
 
